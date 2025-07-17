@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BookOpen, Plus, Trash2, Folder, Tag, Clock, Search } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Folder, Tag, Clock, Search, Pencil } from 'lucide-react';
 import { Note } from '../types';
 
 declare const chrome: any;
@@ -18,6 +18,8 @@ interface PopupState {
     tags: string[];
     folder: string;
   };
+  editingNoteId: string | null;
+  editingFields: Partial<Note> | null;
 }
 
 const Popup: React.FC = () => {
@@ -33,7 +35,9 @@ const Popup: React.FC = () => {
       content: '',
       tags: [],
       folder: 'General'
-    }
+    },
+    editingNoteId: null,
+    editingFields: null,
   });
 
   useEffect(() => {
@@ -71,6 +75,23 @@ const Popup: React.FC = () => {
     } catch (error) {
       console.error('Search failed:', error);
       setState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const handleUpdateNote = async (noteId: string, updates: Partial<Note>) => {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'UPDATE_NOTE',
+        payload: { id: noteId, updates }
+      });
+      if (response.success) {
+        setState(prev => ({
+          ...prev,
+          notes: prev.notes.map(note => note.id === noteId ? { ...note, ...updates } : note)
+        }));
+      }
+    } catch (error) {   
+      console.error('Failed to update note:', error);
     }
   };
 
@@ -189,18 +210,89 @@ const Popup: React.FC = () => {
           >
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-medium text-gray-900 truncate">{note.title}</h3>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteNote(note.id);
-                }}
-                className="p-1 text-gray-400 hover:text-red-600"
-                title="Delete note"
-              >
-                <Trash2 size={14} />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setState(prev => ({
+                      ...prev,
+                      editingNoteId: note.id,
+                      editingFields: { ...note }
+                    }));
+                  }}
+                  className="p-1 text-gray-400 hover:text-blue-600"
+                  title="Edit note"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteNote(note.id);
+                  }}
+                  className="p-1 text-gray-400 hover:text-red-600"
+                  title="Delete note"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 line-clamp-2">{note.content}</p>
+            {state.editingNoteId === note.id ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={state.editingFields?.title || ''}
+                  onChange={e =>
+                    setState(prev => ({
+                      ...prev,
+                      editingFields: { ...prev.editingFields, title: e.target.value }
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+                <textarea
+                  value={state.editingFields?.content || ''}
+                  onChange={e =>
+                    setState(prev => ({
+                      ...prev,
+                      editingFields: { ...prev.editingFields, content: e.target.value }
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await handleUpdateNote(note.id, state.editingFields || {});
+                      setState(prev => ({
+                        ...prev,
+                        editingNoteId: null,
+                        editingFields: null
+                      }));
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      setState(prev => ({
+                        ...prev,
+                        editingNoteId: null,
+                        editingFields: null
+                      }));
+                    }}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 line-clamp-2">{note.content}</p>
+            )}
             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
               <span className="flex items-center gap-1">
                 <Clock size={12} />

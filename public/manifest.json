@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "AI Note Taker",
+  "version": "1.0.0",
+  "description": "AI-powered note-taking with local ONNX models for privacy and performance",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "notifications"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/background/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "AI Note Taker",
+    "default_icon": {
+      "16": "assets/ai-note-16.png",
+      "52": "assets/ai-note-56.png"
+    }
+  },
+  "icons": {
+    "16": "assets/ai-note-16.png",
+    "52": "assets/ai-note-56.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/popup/popup.html",
+        "src/options/options.html",
+        "models/*.onnx",
+        "assets/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "options_page": "src/options/options.html"
+} 

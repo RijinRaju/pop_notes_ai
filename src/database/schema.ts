@@ -132,6 +132,22 @@ export class DatabaseService {
     return notes;
   }
 
+  static async updateNote(id: string, updates: Partial<Note>): Promise<void> {
+    const updateData: Partial<Note> & { updatedAt?: Date } = { ...updates };
+
+    if (this.encryptionKey) {
+      if (typeof updateData.content === 'string') {
+        updateData.content = await EncryptionService.encrypt(updateData.content, this.encryptionKey);
+      }
+      if (typeof updateData.summary === 'string') {
+        updateData.summary = await EncryptionService.encrypt(updateData.summary, this.encryptionKey);
+      }
+    }
+
+    updateData.updatedAt = new Date();
+    await db.notes.update(id, updateData);
+  }
+
   static async deleteNote(id: string): Promise<void> {
     await db.notes.delete(id);
     // Also delete associated flashcards
@@ -154,9 +170,12 @@ export class DatabaseService {
     const newFlashcard: Flashcard = {
       ...flashcard,
       id: crypto.randomUUID(),
-      createdAt: new Date()
+      createdAt: new Date(),
+      nextReview: flashcard.nextReview || new Date(),
+      reviewCount: 0,
+      easeFactor: 2.5,
+      interval: 1
     };
-
     await db.flashcards.add(newFlashcard);
     return newFlashcard;
   }
@@ -170,16 +189,25 @@ export class DatabaseService {
     return db.flashcards.where('nextReview').belowOrEqual(now).toArray();
   }
 
-  static async updateFlashcardReview(id: string, easeFactor: number, interval: number): Promise<void> {
+  static async updateFlashcardReview(id: string, correct: boolean): Promise<void> {
+    const card = await db.flashcards.get(id);
+    if (!card) return;
+    let { easeFactor, interval, reviewCount } = card;
+    reviewCount = (reviewCount || 0) + 1;
+    if (correct) {
+      easeFactor = Math.max(1.3, (easeFactor || 2.5) - 0.15 + 0.1 * (5 - 3));
+      interval = interval ? Math.round(interval * easeFactor) : 1;
+    } else {
+      easeFactor = Math.max(1.3, (easeFactor || 2.5) - 0.2);
+      interval = 1;
+    }
     const nextReview = new Date();
     nextReview.setDate(nextReview.getDate() + interval);
+    await db.flashcards.update(id, { easeFactor, interval, reviewCount, nextReview });
+  }
 
-    await db.flashcards.update(id, {
-      easeFactor,
-      interval,
-      nextReview,
-      reviewCount: ((await db.flashcards.get(id))?.reviewCount || 0) + 1
-    });
+  static async deleteFlashcard(id: string): Promise<void> {
+    await db.flashcards.delete(id);
   }
 
   static async savePromptTemplate(template: Omit<PromptTemplate, 'id' | 'createdAt'>): Promise<PromptTemplate> {

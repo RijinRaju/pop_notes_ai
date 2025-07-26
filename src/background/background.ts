@@ -5,13 +5,13 @@ declare const chrome: any;
 
 class BackgroundService {
   constructor() {
+    this.setupMessageListeners();
     this.init();
   }
 
   private async init(): Promise<void> {
     try {
       await this.initializeDatabase();
-      this.setupMessageListeners();
       console.log('Background service initialized successfully');
     } catch (error) {
       console.error('Failed to initialize background service:', error);
@@ -28,7 +28,7 @@ class BackgroundService {
         encryptionKey: '',
         autoTagging: false,
         autoFolderCreation: false,
-        spacedRepetitionEnabled: false,
+        spacedRepetitionEnabled: true,
         defaultPromptTemplate: '',
         theme: 'system',
         notifications: false
@@ -54,14 +54,32 @@ class BackgroundService {
         case 'GET_NOTES':
           await this.handleGetNotes(sendResponse);
           break;
-        // case 'UPDATE_NOTE':
-        //   await this.handleUpdateNote(message.payload, sendResponse);
-        //   break;
+        case 'UPDATE_NOTE':
+          await this.handleUpdateNote(message.payload, sendResponse);
+          break;
         case 'DELETE_NOTE':
           await this.handleDeleteNote(message.payload, sendResponse);
           break;
         case 'SEARCH_NOTES':
           await this.handleSearchNotes(message.payload, sendResponse);
+          break;
+        case 'CREATE_FLASHCARD':
+          await this.handleCreateFlashcard(message.payload, sendResponse);
+          break;
+        case 'GET_FLASHCARDS':
+          await this.handleGetFlashcards(sendResponse);
+          break;
+        case 'GET_DUE_FLASHCARDS':
+          await this.handleGetDueFlashcards(sendResponse);
+          break;
+        case 'DELETE_FLASHCARD':
+          await this.handleDeleteFlashcard(message.payload, sendResponse);
+          break;
+        case 'REVIEW_FLASHCARD':
+          await this.handleReviewFlashcard(message.payload, sendResponse);
+          break;
+        case 'GET_USER_SETTINGS':
+          await this.handleGetUserSettings(sendResponse);
           break;
         default:
           sendResponse({ error: 'Unknown message type' });
@@ -90,14 +108,14 @@ class BackgroundService {
     }
   }
 
-  // private async handleUpdateNote(payload: any, sendResponse: any): Promise<void> {
-  //   try {
-  //     await DatabaseService.updateNote(payload.id, payload.updates);
-  //     sendResponse({ success: true });
-  //   } catch (error) {
-  //     sendResponse({ error: 'Failed to update note' });
-  //   }
-  // }
+  private async handleUpdateNote(payload: any, sendResponse: any): Promise<void> {
+    try {
+      await DatabaseService.updateNote(payload.id, payload.updates);
+      sendResponse({ success: true });
+    } catch (error) {
+      sendResponse({ error: 'Failed to update note' });
+    }
+  }
 
   private async handleDeleteNote(payload: any, sendResponse: any): Promise<void> {
     try {
@@ -114,6 +132,60 @@ class BackgroundService {
       sendResponse({ success: true, notes });
     } catch (error) {
       sendResponse({ error: 'Failed to search notes' });
+    }
+  }
+
+  private async handleCreateFlashcard(payload: any, sendResponse: any): Promise<void> {
+    try {
+      const flashcard = await DatabaseService.saveFlashcard(payload);
+      sendResponse({ success: true, flashcard });
+    } catch (error) {
+      sendResponse({ error: 'Failed to create flashcard' });
+    }
+  }
+
+  private async handleGetFlashcards(sendResponse: any): Promise<void> {
+    try {
+      const flashcards = await DatabaseService.getFlashcards();
+      sendResponse({ success: true, flashcards });
+    } catch (error) {
+      sendResponse({ error: 'Failed to get flashcards' });
+    }
+  }
+
+  private async handleGetDueFlashcards(sendResponse: any): Promise<void> {
+    try {
+      const flashcards = await DatabaseService.getDueFlashcards();
+      sendResponse({ success: true, flashcards });
+    } catch (error) {
+      sendResponse({ error: 'Failed to get due flashcards' });
+    }
+  }
+
+  private async handleDeleteFlashcard(payload: any, sendResponse: any): Promise<void> {
+    try {
+      await DatabaseService.deleteFlashcard(payload.id);
+      sendResponse({ success: true });
+    } catch (error) {
+      sendResponse({ error: 'Failed to delete flashcard' });
+    }
+  }
+
+  private async handleReviewFlashcard(payload: any, sendResponse: any): Promise<void> {
+    try {
+      await DatabaseService.updateFlashcardReview(payload.id, payload.correct);
+      sendResponse({ success: true });
+    } catch (error) {
+      sendResponse({ error: 'Failed to review flashcard' });
+    }
+  }
+
+  private async handleGetUserSettings(sendResponse: any): Promise<void> {
+    try {
+      const settings = await DatabaseService.getUserSettings();
+      sendResponse({ success: true, settings });
+    } catch (error) {
+      sendResponse({ error: 'Failed to get user settings' });
     }
   }
 }

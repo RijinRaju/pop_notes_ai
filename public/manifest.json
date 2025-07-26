@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Note Taker",
+  "name": "POP Notes AI",
   "version": "1.0.0",
   "description": "AI-powered note-taking with local ONNX models for privacy and performance",
   "permissions": [

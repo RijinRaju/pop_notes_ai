@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BookOpen, Plus, Trash2, Folder, Tag, Clock, Search, Pencil } from 'lucide-react';
-import { Note } from '../types';
+import { BookOpen, Plus, Trash2, Folder, Tag, Clock, Search, Pencil, Layers, Save } from 'lucide-react';
+import { Note, Flashcard } from '../types';
 
 declare const chrome: any;
 
 interface PopupState {
   notes: Note[];
+  flashcards: Flashcard[];
   searchQuery: string;
   searchResults: Note[];
   isLoading: boolean;
@@ -20,11 +21,20 @@ interface PopupState {
   };
   editingNoteId: string | null;
   editingFields: Partial<Note> | null;
+  activeTab: 'notes' | 'search' | 'flashcards';
+  spacedRepetitionEnabled: boolean;
+  showCreateFlashcard: boolean;
+  newFlashcard: {
+    question: string;
+    answer: string;
+  };
+  flippedFlashcardIds: Set<string>;
 }
 
 const Popup: React.FC = () => {
   const [state, setState] = useState<PopupState>({
     notes: [],
+    flashcards: [],
     searchQuery: '',
     searchResults: [],
     isLoading: false,
@@ -38,6 +48,14 @@ const Popup: React.FC = () => {
     },
     editingNoteId: null,
     editingFields: null,
+    activeTab: 'notes',
+    spacedRepetitionEnabled: false,
+    showCreateFlashcard: false,
+    newFlashcard: {
+      question: '',
+      answer: ''
+    },
+    flippedFlashcardIds: new Set(),
   });
 
   useEffect(() => {
@@ -47,9 +65,29 @@ const Popup: React.FC = () => {
   const loadData = async () => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const notesResponse = await chrome.runtime.sendMessage({ type: 'GET_NOTES' });
+      // First, get user settings to see if flashcards are enabled
+      const settingsResponse = await chrome.runtime.sendMessage({ type: 'GET_USER_SETTINGS' });
+      const spacedRepetitionEnabled = settingsResponse.success && settingsResponse.settings?.spacedRepetitionEnabled;
+
+      const dataPromises: Promise<any>[] = [
+        chrome.runtime.sendMessage({ type: 'GET_NOTES' }),
+      ];
+
+      if (spacedRepetitionEnabled) {
+        // If enabled, also fetch flashcards that are due for review
+        dataPromises.push(chrome.runtime.sendMessage({ type: 'GET_DUE_FLASHCARDS' }));
+      }
+
+      const [notesResponse, flashcardsResponse] = await Promise.all(dataPromises);
+
       if (notesResponse.success) {
-        setState(prev => ({ ...prev, notes: notesResponse.notes }));
+        setState(prev => ({
+          ...prev,
+          notes: notesResponse.notes,
+          // Only update flashcards if the response exists and was successful
+          flashcards: flashcardsResponse?.success ? flashcardsResponse.flashcards : [],
+          spacedRepetitionEnabled: !!spacedRepetitionEnabled,
+        }));
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -87,7 +125,11 @@ const Popup: React.FC = () => {
       if (response.success) {
         setState(prev => ({
           ...prev,
-          notes: prev.notes.map(note => note.id === noteId ? { ...note, ...updates } : note)
+          notes: prev.notes.map(note => note.id === noteId ? { ...note, ...updates } : note),
+          searchResults: prev.searchResults.map(note => note.id === noteId ? { ...note, ...updates } : note),
+          selectedNote: prev.selectedNote?.id === noteId 
+            ? { ...prev.selectedNote, ...updates } 
+            : prev.selectedNote
         }));
       }
     } catch (error) {   
@@ -138,12 +180,74 @@ const Popup: React.FC = () => {
         setState(prev => ({
           ...prev,
           notes: prev.notes.filter(note => note.id !== noteId),
+          searchResults: prev.searchResults.filter(note => note.id !== noteId),
           selectedNote: null
         }));
       }
     } catch (error) {
       console.error('Failed to delete note:', error);
     }
+  };
+
+  const handleCreateFlashcard = async (noteId: string) => {
+    if (!state.newFlashcard.question.trim() || !state.newFlashcard.answer.trim()) return;
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'CREATE_FLASHCARD',
+        payload: {
+          noteId: noteId,
+          question: state.newFlashcard.question,
+          answer: state.newFlashcard.answer
+        }
+      });
+      if (response.success && response.flashcard) {
+        alert('Flashcard created successfully!');
+        setState(prev => ({
+          ...prev,
+          flashcards: [...prev.flashcards, response.flashcard],
+          showCreateFlashcard: false,
+          newFlashcard: { question: '', answer: '' },
+          // Switch to the flashcards tab to see the new card
+          activeTab: 'flashcards'
+        }));
+      } else {
+        console.error('Failed to create flashcard:', response.error);
+        alert('Failed to create flashcard.');
+      }
+    } catch (error) {
+      console.error('Failed to create flashcard:', error);
+    }
+  };
+
+  const handleReviewFlashcard = async (flashcardId: string, correct: boolean) => {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'REVIEW_FLASHCARD',
+        payload: { id: flashcardId, correct }
+      });
+      if (response.success) {
+        setState(prev => ({
+          ...prev,
+          flashcards: prev.flashcards.filter(card => card.id !== flashcardId)
+        }));
+      } else {
+        console.error('Failed to review flashcard:', response.error);
+      }
+    } catch (error) {
+      console.error('Failed to review flashcard:', error);
+    }
+  };
+
+  const handleFlipFlashcard = (cardId: string) => {
+    setState(prev => {
+      const newFlippedIds = new Set(prev.flippedFlashcardIds);
+      if (newFlippedIds.has(cardId)) {
+        newFlippedIds.delete(cardId);
+      } else {
+        newFlippedIds.add(cardId);
+      }
+      return { ...prev, flippedFlashcardIds: newFlippedIds };
+    });
   };
 
   const formatDate = (date: Date) => {
@@ -315,6 +419,53 @@ const Popup: React.FC = () => {
     </div>
   );
 
+  const renderFlashcards = () => {
+    const cardColors = [
+      'bg-yellow-100 border-yellow-300',
+      'bg-blue-100 border-blue-300',
+      'bg-green-100 border-green-300',
+      'bg-purple-100 border-purple-300',
+      'bg-pink-100 border-pink-300',
+    ];
+
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Flashcards for Review</h2>
+        {state.flashcards.length === 0 ? (
+          <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+            <p className="text-gray-500">No flashcards due for review today. Great job!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {state.flashcards.map((card, index) => {
+              const isFlipped = state.flippedFlashcardIds.has(card.id);
+              const colorClass = cardColors[index % cardColors.length];
+
+              return (
+                <div key={card.id} className={`rounded-lg border p-4 shadow-sm ${colorClass}`}>
+                  <div className="min-h-[6rem] flex items-center justify-center">
+                    <p className="text-center font-medium text-gray-800">
+                      {isFlipped ? card.answer : card.question}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-dashed border-gray-400/50">
+                    {isFlipped ? (
+                      <div className="flex justify-center gap-3">
+                        <button onClick={() => handleReviewFlashcard(card.id, false)} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors w-full">Incorrect</button>
+                        <button onClick={() => handleReviewFlashcard(card.id, true)} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full">Correct</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => handleFlipFlashcard(card.id)} className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Show Answer</button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
   const renderSearch = () => (
     <div className="space-y-4">
       <div className="relative">
@@ -359,7 +510,7 @@ const Popup: React.FC = () => {
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
           >
             <BookOpen size={16} />
-            Back to Notes
+             Back
           </button>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -384,7 +535,23 @@ const Popup: React.FC = () => {
               </div>
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => {
+                setState(prev => ({
+                  ...prev,
+                  showCreateFlashcard: true,
+                  newFlashcard: {
+                    question: prev.selectedNote?.title || '',
+                    answer: prev.selectedNote?.content || ''
+                  }
+                }));
+              }}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <Layers size={16} />
+              Create Flashcard
+            </button>
             <button
               onClick={() => handleDeleteNote(state.selectedNote!.id)}
               className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -393,6 +560,45 @@ const Popup: React.FC = () => {
               Delete
             </button>
           </div>
+          {state.showCreateFlashcard && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3 border border-gray-200">
+              <h3 className="text-lg font-semibold">New Flashcard</h3>
+              <input
+                type="text"
+                placeholder="Question"
+                value={state.newFlashcard.question}
+                onChange={(e) => setState(prev => ({
+                  ...prev,
+                  newFlashcard: { ...prev.newFlashcard, question: e.target.value }
+                }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <textarea
+                placeholder="Answer"
+                value={state.newFlashcard.answer}
+                onChange={(e) => setState(prev => ({
+                  ...prev,
+                  newFlashcard: { ...prev.newFlashcard, answer: e.target.value }
+                }))}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleCreateFlashcard(state.selectedNote!.id)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center gap-2"
+                >
+                  <Save size={16} /> Save Flashcard
+                </button>
+                <button
+                  onClick={() => setState(prev => ({ ...prev, showCreateFlashcard: false }))}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -407,29 +613,40 @@ const Popup: React.FC = () => {
           {/* Header */}
           <div className="bg-white border-b border-gray-200 p-4">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-gray-900">AI Note Taker</h1>
+              <h1 className="text-xl font-bold text-gray-900"> <img src="../../public/assets/ai-note-16.png" alt="" /> POP Notes AI</h1>
             </div>
           </div>
           {/* Tabs */}
           <div className="bg-white border-b border-gray-200">
             <div className="flex">
-              {[
-                { id: 'notes', label: 'Notes', icon: BookOpen },
-                { id: 'search', label: 'Search', icon: Search }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setState(prev => ({ ...prev, activeTab: tab.id as any }))}
-                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
-                    (state as any).activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <tab.icon size={16} />
-                  {tab.label}
-                </button>
-              ))}
+              {(() => {
+                const tabs: {
+                  id: 'notes' | 'search' | 'flashcards';
+                  label: string;
+                  icon: typeof BookOpen;
+                }[] = [
+                  { id: 'notes', label: 'Notes', icon: BookOpen },
+                  { id: 'search', label: 'Search', icon: Search },
+                  { id: 'flashcards', label: 'Flashcards', icon: Layers }
+                ];
+                if (state.spacedRepetitionEnabled) {
+                  tabs.splice(1, 0, { id: 'flashcards', label: 'Flashcards', icon: Layers });
+                }
+                return tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setState(prev => ({ ...prev, activeTab: tab.id }))}
+                    className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                      state.activeTab === tab.id
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <tab.icon size={16} />
+                    {tab.label}
+                  </button>
+                ));
+              })()}
             </div>
           </div>
           {/* Content */}
@@ -440,8 +657,9 @@ const Popup: React.FC = () => {
               </div>
             ) : (
               <>
-                {(state as any).activeTab === 'notes' && renderNotes()}
-                {(state as any).activeTab === 'search' && renderSearch()}
+                {state.activeTab === 'notes' && renderNotes()}
+                {state.activeTab === 'search' && renderSearch()}
+                {state.activeTab === 'flashcards' && renderFlashcards()}
               </>
             )}
           </div>

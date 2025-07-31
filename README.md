@@ -1,4 +1,4 @@
-# AI Note Taker - Browser Extension
+# POP Notes AI - Browser Extension
 
 A powerful AI-powered note-taking browser extension that runs entirely in your browser using local ONNX models for privacy and performance.
 

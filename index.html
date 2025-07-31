@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pop Note AI - Smart Note-Taking Extension</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeInUp {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    .hover-scale:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex items-center">
+          <span class="text-2xl font-bold text-indigo-600">Pop Note AI</span>
+        </div>
+        <div class="hidden md:flex space-x-4">
+          <a href="#features" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md">Features</a>
+          <a href="#usage" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md">Usage</a>
+          <a href="#waitlist" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md">Join Waitlist</a>
+        </div>
+        <div class="md:hidden">
+          <button id="menu-button" class="text-gray-600 hover:text-indigo-600 focus:outline-none">
+            <i class="fas fa-bars text-2xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-md">
+      <a href="#features" class="block text-gray-600 hover:text-indigo-600 px-4 py-2">Features</a>
+      <a href="#usage" class="block text-gray-600 hover:text-indigo-600 px-4 py-2">Usage</a>
+      <a href="#waitlist" class="block text-gray-600 hover:text-indigo-600 px-4 py-2">Join Waitlist</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl md:text-6xl font-extrabold animate-fadeInUp">Pop Note AI: Smarter Notes, Anywhere</h1>
+      <p class="mt-4 text-lg md:text-xl animate-fadeInUp delay-100">Transform your browsing with AI-powered summaries, flashcards, and offline note-taking.</p>
+      <a href="#waitlist" class="mt-6 inline-block bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full hover:bg-indigo-100 hover-scale animate-fadeInUp delay-200">Join the Waitlist</a>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800">Features That Empower Your Learning</h2>
+      <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- Feature 1 -->
+        <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
+          <i class="fas fa-highlighter text-indigo-600 text-3xl mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-800">True "Any-Page" Summaries</h3>
+          <p class="mt-2 text-gray-600">Select text or capture screenshots for instant AI summaries of any webpage, PDF, or doc.</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
+          <i class="fas fa-brain text-indigo-600 text-3xl mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-800">On-Device Learning</h3>
+          <p class="mt-2 text-gray-600">Personalized AI adapts to your feedback and domains, all processed locally.</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
+          <i class="fas fa-folder-open text-indigo-600 text-3xl mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-800">Smart Organization</h3>
+          <p class="mt-2 text-gray-600">Auto-tagging, semantic search, and offline access for your notes.</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
+          <i class="fas fa-graduation-cap text-indigo-600 text-3xl mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-800">Learning Tools</h3>
+          <p class="mt-2 text-gray-600">Generate flashcards, track progress, and review with spaced repetition.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage Section -->
+  <section id="usage" class="py-16 bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800">How to Use Pop Note AI</h2>
+      <div class="mt-12 space-y-12">
+        <!-- Basic Note Taking -->
+        <div class="flex flex-col md:flex-row items-center">
+          <div class="md:w-1/2 p-6">
+            <h3 class="text-2xl font-semibold text-gray-800">Basic Note Taking</h3>
+            <ol class="mt-4 list-decimal list-inside text-gray-600 space-y-2">
+              <li>Select any text on a webpage.</li>
+              <li>Click "Summarize" in the floating toolbar.</li>
+              <li>Save the AI-generated summary as a note.</li>
+            </ol>
+          </div>
+          <div class="md:w-1/2 p-6">
+            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">📝 Demo Image</div>
+          </div>
+        </div>
+        <!-- Screenshot Analysis -->
+        <div class="flex flex-col md:flex-row-reverse items-center">
+          <div class="md:w-1/2 p-6">
+            <h3 class="text-2xl font-semibold text-gray-800">Screenshot Analysis</h3>
+            <ol class="mt-4 list-decimal list-inside text-gray-600 space-y-2">
+              <li>Click the extension icon.</li>
+              <li>Select "Take Screenshot" and drag to capture.</li>
+              <li>Get an instant AI description of the content.</li>
+            </ol>
+          </div>
+          <div class="md:w-1/2 p-6">
+            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">📸 Demo Image</div>
+          </div>
+        </div>
+        <!-- PDF Processing -->
+        <div class="flex flex-col md:flex-row items-center">
+          <div class="md:w-1/2 p-6">
+            <h3 class="text-2xl font-semibold text-gray-800">PDF Processing</h3>
+            <ol class="mt-4 list-decimal list-inside text-gray-600 space-y-2">
+              <li>Open any PDF in your browser.</li>
+              <li>Extension auto-detects the PDF.</li>
+              <li>Click "Parse PDF" to summarize content.</li>
+            </ol>
+          </div>
+          <div class="md:w-1/2 p-6">
+            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">📄 Demo Image</div>
+          </div>
+        </div>
+        <!-- Flashcard Creation -->
+        <div class="flex flex-col md:flex-row-reverse items-center">
+          <div class="md:w-1/2 p-6">
+            <h3 class="text-2xl font-semibold text-gray-800">Flashcard Creation</h3>
+            <ol class="mt-4 list-decimal list-inside text-gray-600 space-y-2">
+              <li>Select text or save a note.</li>
+              <li>Click "Create Flashcard."</li>
+              <li>Review using spaced repetition.</li>
+            </ol>
+          </div>
+          <div class="md:w-1/2 p-6">
+            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">🃏 Demo Image</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Waitlist Section -->
+  <section id="waitlist" class="py-16 bg-indigo-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold">Join the Pop Note AI Waitlist</h2>
+      <p class="mt-4 text-lg">Be the first to experience smarter note-taking. Sign up now!</p>
+      <div class="mt-8 max-w-md mx-auto">
+        <div id="waitlist-form" class="flex flex-col sm:flex-row gap-4">
+          <input id="email-input" type="email" placeholder="Enter your email" class="px-4 py-3 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" required>
+          <button id="submit-email" class="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-full hover:bg-indigo-100">Sign Up</button>
+        </div>
+        <p id="form-message" class="mt-4 hidden text-sm"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div>
+          <span class="text-xl font-bold">Pop Note AI</span>
+          <p class="mt-2 text-sm">© 2025 Pop Note AI. All rights reserved.</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex space-x-4">
+          <a href="#features" class="hover:text-indigo-400">Features</a>
+          <a href="#usage" class="hover:text-indigo-400">Usage</a>
+          <a href="#waitlist" class="hover:text-indigo-400">Waitlist</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const menuButton = document.getElementById('menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Waitlist form handling
+    const emailInput = document.getElementById('email-input');
+    const submitButton = document.getElementById('submit-email');
+    const formMessage = document.getElementById('form-message');
+
+    submitButton.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!email) {
+        formMessage.textContent = 'Please enter an email address.';
+        formMessage.classList.remove('hidden', 'text-green-300');
+        formMessage.classList.add('text-red-300');
+        return;
+      }
+
+      if (!emailRegex.test(email)) {
+        formMessage.textContent = 'Please enter a valid email address.';
+        formMessage.classList.remove('hidden', 'text-green-300');
+        formMessage.classList.add('text-red-300');
+        return;
+      }
+
+      // Simulate storing email (replace with backend in production)
+      localStorage.setItem(`waitlist_${email}`, email);
+      formMessage.textContent = 'Thank you for joining the waitlist!';
+      formMessage.classList.remove('hidden', 'text-red-300');
+      formMessage.classList.add('text-green-300');
+      emailInput.value = '';
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>

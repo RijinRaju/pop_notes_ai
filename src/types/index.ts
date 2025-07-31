@@ -89,8 +89,13 @@ export interface SelectionData {
   element: HTMLElement;
 }
 
+export type MessageType = 'CREATE_NOTE' | 'GET_NOTES' | 'UPDATE_NOTE' | 'DELETE_NOTE' | 'SEARCH_NOTES' | 
+                          'CREATE_FLASHCARD' | 'GET_FLASHCARDS' | 'GET_DUE_FLASHCARDS' | 'REVIEW_FLASHCARD' | 'DELETE_FLASHCARD' |
+                          'GET_USER_SETTINGS' |
+                          'AI_SUMMARY' | 'SCREENSHOT_SUMMARY' | 'PDF_PARSE' | 'DOCX_PARSE';
+
 export interface Message {
-  type: 'CREATE_NOTE' | 'GET_NOTES' | 'DELETE_NOTE' | 'SEARCH_NOTES' | 'CREATE_FLASHCARD' | 'GET_FLASHCARDS' | 'AI_SUMMARY' | 'SCREENSHOT_SUMMARY' | 'PDF_PARSE' | 'DOCX_PARSE';
-  payload: any;
+  type: MessageType;
+  payload?: any;
   response?: any;
 } 

@@ -6,6 +6,7 @@
   <title>Pop Note AI - Smart Note-Taking Extension</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
@@ -50,7 +51,7 @@
   <!-- Hero Section -->
   <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="text-4xl md:text-6xl font-extrabold animate-fadeInUp">Pop Note AI: Smarter Notes, Anywhere</h1>
+      <h1 class="text-4xl md:text-6xl font-extrabold animate-fadeInUp">Pop Note AI: Smarter Notes As Browser Extension</h1>
       <p class="mt-4 text-lg md:text-xl animate-fadeInUp delay-100">Transform your browsing with AI-powered summaries, flashcards, and offline note-taking.</p>
       <a href="#waitlist" class="mt-6 inline-block bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full hover:bg-indigo-100 hover-scale animate-fadeInUp delay-200">Join the Waitlist</a>
     </div>
@@ -61,25 +62,21 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800">Features That Empower Your Learning</h2>
       <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <!-- Feature 1 -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
           <i class="fas fa-highlighter text-indigo-600 text-3xl mb-4"></i>
           <h3 class="text-xl font-semibold text-gray-800">True "Any-Page" Summaries</h3>
           <p class="mt-2 text-gray-600">Select text or capture screenshots for instant AI summaries of any webpage, PDF, or doc.</p>
         </div>
-        <!-- Feature 2 -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
           <i class="fas fa-brain text-indigo-600 text-3xl mb-4"></i>
           <h3 class="text-xl font-semibold text-gray-800">On-Device Learning</h3>
           <p class="mt-2 text-gray-600">Personalized AI adapts to your feedback and domains, all processed locally.</p>
         </div>
-        <!-- Feature 3 -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
           <i class="fas fa-folder-open text-indigo-600 text-3xl mb-4"></i>
           <h3 class="text-xl font-semibold text-gray-800">Smart Organization</h3>
           <p class="mt-2 text-gray-600">Auto-tagging, semantic search, and offline access for your notes.</p>
         </div>
-        <!-- Feature 4 -->
         <div class="p-6 bg-gray-50 rounded-lg shadow-md hover-scale">
           <i class="fas fa-graduation-cap text-indigo-600 text-3xl mb-4"></i>
           <h3 class="text-xl font-semibold text-gray-800">Learning Tools</h3>
@@ -94,7 +91,6 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-800">How to Use Pop Note AI</h2>
       <div class="mt-12 space-y-12">
-        <!-- Basic Note Taking -->
         <div class="flex flex-col md:flex-row items-center">
           <div class="md:w-1/2 p-6">
             <h3 class="text-2xl font-semibold text-gray-800">Basic Note Taking</h3>
@@ -105,10 +101,12 @@
             </ol>
           </div>
           <div class="md:w-1/2 p-6">
-            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">📝 Demo Image</div>
+            <div class=" h-64 rounded-lg flex items-center justify-center">
+
+                <img src="./public/assets/demo1.png" alt="Demo Image" class="rounded-lg" height="200px" width="350px">
+            </div>
           </div>
         </div>
-        <!-- Screenshot Analysis -->
         <div class="flex flex-col md:flex-row-reverse items-center">
           <div class="md:w-1/2 p-6">
             <h3 class="text-2xl font-semibold text-gray-800">Screenshot Analysis</h3>
@@ -119,10 +117,11 @@
             </ol>
           </div>
           <div class="md:w-1/2 p-6">
-            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">📸 Demo Image</div>
+            <div class="h-64 rounded-lg flex items-center justify-center">
+                <img src="./public/assets/demo2.png" alt="Demo Image" height="50px" width="250px" class="rounded-lg">
+            </div>
           </div>
         </div>
-        <!-- PDF Processing -->
         <div class="flex flex-col md:flex-row items-center">
           <div class="md:w-1/2 p-6">
             <h3 class="text-2xl font-semibold text-gray-800">PDF Processing</h3>
@@ -133,10 +132,11 @@
             </ol>
           </div>
           <div class="md:w-1/2 p-6">
-            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">📄 Demo Image</div>
+            <div class="h-64 rounded-lg flex items-center justify-center">
+                <img src="./public/assets/demo3.png" alt="Demo Image" class="rounded-lg" height="200px" width="250px">
+            </div>
           </div>
         </div>
-        <!-- Flashcard Creation -->
         <div class="flex flex-col md:flex-row-reverse items-center">
           <div class="md:w-1/2 p-6">
             <h3 class="text-2xl font-semibold text-gray-800">Flashcard Creation</h3>
@@ -147,7 +147,9 @@
             </ol>
           </div>
           <div class="md:w-1/2 p-6">
-            <div class="bg-gray-300 h-64 rounded-lg flex items-center justify-center">🃏 Demo Image</div>
+            <div class="h-64 rounded-lg flex items-center justify-center">
+                <img src="./public/assets/demo4.png" alt="Demo Image" class="rounded-lg" height="200px" width="250px">
+            </div>
           </div>
         </div>
       </div>
@@ -164,7 +166,7 @@
           <input id="email-input" type="email" placeholder="Enter your email" class="px-4 py-3 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" required>
           <button id="submit-email" class="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-full hover:bg-indigo-100">Sign Up</button>
         </div>
-        <p id="form-message" class="mt-4 hidden text-sm"></p>
+        <p id="form-message" class="mt-4 nascosto text-sm"></p>
       </div>
     </div>
   </section>
@@ -187,6 +189,9 @@
   </footer>
 
   <script>
+    // Initialize EmailJS with your public key
+    emailjs.init("6fSQuZOWa-zHBkx68"); // Replace with your EmailJS Public Key
+
     // Mobile menu toggle
     const menuButton = document.getElementById('menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -199,31 +204,56 @@
     const submitButton = document.getElementById('submit-email');
     const formMessage = document.getElementById('form-message');
 
-    submitButton.addEventListener('click', () => {
-      const email = emailInput.value.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+submitButton.addEventListener('click', async (event) => {
+  event.preventDefault();
 
-      if (!email) {
-        formMessage.textContent = 'Please enter an email address.';
-        formMessage.classList.remove('hidden', 'text-green-300');
-        formMessage.classList.add('text-red-300');
-        return;
-      }
+  const email = emailInput.value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!emailRegex.test(email)) {
-        formMessage.textContent = 'Please enter a valid email address.';
-        formMessage.classList.remove('hidden', 'text-green-300');
-        formMessage.classList.add('text-red-300');
-        return;
-      }
+  if (!email) {
+    formMessage.textContent = 'Please enter an email address.';
+    formMessage.classList.remove('hidden', 'text-green-300');
+    formMessage.classList.add('text-red-300');
+    return;
+  }
 
-      // Simulate storing email (replace with backend in production)
-      localStorage.setItem(`waitlist_${email}`, email);
+  if (!emailRegex.test(email)) {
+    formMessage.textContent = 'Please enter a valid email address.';
+    formMessage.classList.remove('hidden', 'text-green-300');
+    formMessage.classList.add('text-red-300');
+    return;
+  }
+
+  try {
+    // Send POST request to Google Apps Script Web App
+    const response = await fetch('https://script.google.com/macros/s/AKfycbyC8KKM9xzVSCXWzAICO2_UcYa_9Bd4ykxsMLzzWHtoXRJrviHOXvhh1Svd4dGIJig/exec', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ email }),
+    });
+
+    const result = await response.json();
+
+    if (result.result === 'success') {
       formMessage.textContent = 'Thank you for joining the waitlist!';
       formMessage.classList.remove('hidden', 'text-red-300');
       formMessage.classList.add('text-green-300');
       emailInput.value = '';
-    });
+    } else {
+      formMessage.textContent = 'Failed to register email. Please try again.';
+      formMessage.classList.remove('hidden', 'text-green-300');
+      formMessage.classList.add('text-red-300');
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error);
+    formMessage.textContent = 'Error submitting form. Please try again.';
+    formMessage.classList.remove('hidden', 'text-green-300');
+    formMessage.classList.add('text-red-300');
+  }
+});
+
 
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

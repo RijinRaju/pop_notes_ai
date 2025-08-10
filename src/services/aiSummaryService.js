@@ -18,12 +18,12 @@ class AISummaryService {
       // Dynamically import the transformers library
       const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js');
       
-      // Initialize the text2text-generation pipeline with flan-t5-small model
-      this.pipeline = await pipeline('text2text-generation', 'Xenova/flan-t5-small');
+      // Initialize the summarization pipeline (defaults to sshleifer/distilbart-cnn-12-6)
+      this.pipeline = await pipeline('summarization');
       
       this.isInitialized = true;
       this.isLoading = false;
-      console.log('✅ AI Summary Service initialized successfully');
+      console.log('✅ AI Summary Service initialized successfully with summarization pipeline');
       
       return true;
     } catch (error) {
@@ -45,17 +45,16 @@ class AISummaryService {
     try {
       console.log('📝 Generating AI summary for text:', text.substring(0, 100) + '...');
       
-      // Create a prompt for summarization
-      const prompt = `Summarize the following text in a concise way:\n\n"${text}"\n\nSummary:`;
+      // Use the summarization pipeline directly with the text
+      // The pipeline will automatically handle the summarization task
+      const output = await this.pipeline(text, {
+        max_length: maxLength,
+        min_length: 30,
+        do_sample: false
+      });
       
-      // Generate summary using the pipeline
-      const output = await this.pipeline(prompt);
-      
-      if (output && output[0] && output[0].generated_text) {
-        let summary = output[0].generated_text.trim();
-        
-        // Clean up the summary (remove quotes if present)
-        summary = summary.replace(/^["']|["']$/g, '');
+      if (output && output[0] && output[0].summary_text) {
+        let summary = output[0].summary_text.trim();
         
         // Truncate if too long
         if (summary.length > maxLength) {
@@ -88,7 +87,8 @@ class AISummaryService {
     return {
       isInitialized: this.isInitialized,
       isLoading: this.isLoading,
-      hasPipeline: !!this.pipeline
+      hasPipeline: !!this.pipeline,
+      pipelineType: 'summarization'
     };
   }
 }

@@ -35,20 +35,16 @@ const safeSendMessage = async (message, maxRetries = 3) => {
         if (attempt < maxRetries) {
           console.log(`Attempting to recover (attempt ${attempt + 1}/${maxRetries})...`);
           
-          // Try to reload the extension context
-          try {
-            await chrome.runtime.reload();
-            console.log('Extension context reloaded');
-            // Wait a bit and try again
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            continue; // Try again
-          } catch (reloadError) {
-            console.error('Failed to reload extension context:', reloadError);
-            // Wait a bit longer before next attempt
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            continue; // Try again
-          }
+          // Wait a bit and try again (can't reload extension from content script)
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue; // Try again
         } else {
+          // Show user-friendly error message
+          showNotification(
+            'Extension Error', 
+            'Extension connection lost. Please refresh the page or reload the extension manually.', 
+            'error'
+          );
           throw new Error('Extension context unavailable after multiple retry attempts - please refresh the page or reload the extension');
         }
       }
@@ -75,21 +71,27 @@ const checkExtensionConnection = () => {
 // Periodic connection check to detect context invalidation
 const startConnectionMonitoring = () => {
   setInterval(async () => {
-    if (!checkExtensionConnection()) {
-      console.warn('⚠️ Extension connection lost - context may be invalidated');
-      
-      // Remove any existing floating buttons
-      if (container) {
-        removeFloatingButton();
+    try {
+      if (!checkExtensionConnection()) {
+        console.warn('⚠️ Extension connection lost - context may be invalidated');
+        
+        // Remove any existing floating buttons
+        if (container) {
+          removeFloatingButton();
+        }
+        
+        // Show recovery notification
+        showRecoveryNotification();
+        
+        // Try automatic recovery
+        await attemptAutomaticRecovery();
       }
-      
-      // Show recovery notification
-      showRecoveryNotification();
-      
-      // Try automatic recovery
-      await attemptAutomaticRecovery();
+    } catch (error) {
+      // If we can't even check the connection, stop monitoring
+      console.error('Connection monitoring failed:', error);
+      clearInterval(this);
     }
-  }, 5000); // Check every 5 seconds
+  }, 10000); // Check every 10 seconds (less aggressive)
 };
 
 // Attempt automatic recovery of extension context
@@ -97,16 +99,12 @@ const attemptAutomaticRecovery = async () => {
   console.log('🔄 Attempting automatic recovery...');
   
   try {
-    // Try to reload the extension context
-    await chrome.runtime.reload();
-    console.log('✅ Extension context reloaded automatically');
-    
-    // Wait for it to initialize
+    // Wait a bit and check if connection is restored
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     if (checkExtensionConnection()) {
       console.log('✅ Automatic recovery successful!');
-      showNotification('Recovery', 'Extension automatically recovered!', 'success');
+      showNotification('Recovery', 'Extension connection restored!', 'success');
       // Reset the recovery shown flag
       window.extensionRecoveryShown = false;
     } else {
@@ -740,8 +738,7 @@ const createFloatingButton = (top, left, selectedText) => {
         `;
         recoveryButton.disabled = true;
         
-        // Try to reload the extension context
-        await chrome.runtime.reload();
+        // Wait and check if connection is restored
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         if (checkExtensionConnection()) {

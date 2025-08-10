@@ -83,6 +83,9 @@ class BackgroundService {
         case 'RESET_DATABASE':
           await this.handleResetDatabase(sendResponse);
           break;
+        case 'TEST_AI_SUMMARY':
+          await this.handleTestAISummary(sendResponse);
+          break;
         default:
           console.warn('Unknown message type:', message.type);
           sendResponse({ success: false, error: 'Unknown message type' });
@@ -387,6 +390,48 @@ class BackgroundService {
       }
     } catch (error) {
       console.error('Error handling show summary modal:', error);
+      sendResponse({ success: false, error: error.message });
+    }
+  }
+
+  async handleTestAISummary(sendResponse) {
+    try {
+      console.log('Testing AI summary pipeline...');
+      
+      // Test text from the documentation
+      const testText = "Paris is the capital and most populous city of France, with an estimated population of 2,175,601 residents as of 2018, in an area of more than 105 square kilometres (41 square miles). The City of Paris is the centre and seat of government of the region and province of Île-de-France, or Paris Region, which has an estimated population of 12,174,880, or about 18 percent of the population of France as of 2017.";
+      
+      try {
+        // Try to use the AI service
+        const AISummaryService = await import('../services/aiSummaryService.js');
+        const aiService = new AISummaryService.default();
+        
+        if (await aiService.isAvailable()) {
+          const summary = await aiService.generateSummary(testText, 100);
+          sendResponse({ 
+            success: true, 
+            message: 'AI summary pipeline test successful',
+            summary: summary
+          });
+        } else {
+          sendResponse({ 
+            success: false, 
+            message: 'AI summary service not available',
+            summary: null
+          });
+        }
+      } catch (aiError) {
+        console.log('AI service failed, using fallback:', aiError.message);
+        // Use fallback summarization
+        const summary = this.generateSimpleSummary(testText);
+        sendResponse({ 
+          success: true, 
+          message: 'AI summary pipeline test failed, using fallback',
+          summary: summary
+        });
+      }
+    } catch (error) {
+      console.error('Error testing AI summary:', error);
       sendResponse({ success: false, error: error.message });
     }
   }

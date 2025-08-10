@@ -41,6 +41,7 @@
       "resources": [
         "src/popup/popup.html",
         "src/options/options.html",
+        "src/services/aiSummaryService.js",
         "models/*.onnx",
         "assets/*"
       ],

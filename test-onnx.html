@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Note - ONNX Model Test</title>
+    <script src="./src/services/onnxService.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .status.warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .status.info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            margin: 15px 0;
+        }
+        .result {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .metric {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .metric h3 {
+            margin: 0 0 10px 0;
+            color: #475569;
+            font-size: 14px;
+        }
+        .metric .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Note - ONNX Model Test</h1>
+        <p>This page tests the ONNX model functionality of the AI Note extension.</p>
+        
+        <div id="status" class="status info">
+            <div class="loading"></div> Initializing...
+        </div>
+        
+        <div class="grid">
+            <div class="metric">
+                <h3>Model Status</h3>
+                <div id="modelStatus" class="value">Unknown</div>
+            </div>
+            <div class="metric">
+                <h3>ONNX Runtime</h3>
+                <div id="onnxStatus" class="value">Unknown</div>
+            </div>
+            <div class="metric">
+                <h3>Vocabulary Size</h3>
+                <div id="vocabSize" class="value">Unknown</div>
+            </div>
+            <div class="metric">
+                <h3>Model Mode</h3>
+                <div id="modelMode" class="value">Unknown</div>
+            </div>
+        </div>
+        
+        <button id="testModel">🧪 Test ONNX Model</button>
+        <button id="testSummarization" onclick="testSummarization()">📝 Test Summarization</button>
+        <button id="refreshStatus" onclick="refreshStatus()">🔄 Refresh Status</button>
+        
+        <div>
+            <h3>Test Text for Summarization:</h3>
+            <textarea id="testText" placeholder="Enter text to test summarization..."></textarea>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js';
+        var text = document.getElementById('testText').value;
+        console.log('Testing ONNX model with text:', text);
+        document.getElementById('testModel').addEventListener('click', async () => {
+            console.log('Testing ONNX model...');
+            const pipe = await pipeline('text2text-generation');
+            const output = await pipe(`Summarize: "${text}"`);
+            console.log(output);
+            document.getElementById('results').innerHTML =
+                `<div class="result"><strong>Model Output:</strong>\n${output[0].generated_text}</div>`;
+        });
+</script>
+
+    <script >
+        let modelStatus = {};
+        
+        // Listen for model status updates from the extension
+        document.addEventListener('modelStatusUpdate', (event) => {
+            console.log('Model status update received:', event.detail);
+            updateStatus(event.detail);
+        });
+        
+        // Listen for summarization results
+        document.addEventListener('summarizationResult', (event) => {
+            console.log('Summarization result received:', event.detail);
+            showResult(event.detail);
+        });
+        
+        function updateStatus(data) {
+            const status = data.status || data;
+            modelStatus = status;
+            
+            // Update status display
+            document.getElementById('modelStatus').textContent = status.isInitialized ? '✅ Initialized' : '❌ Not Initialized';
+            document.getElementById('onnxStatus').textContent = status.hasOrt ? '✅ Available' : '❌ Not Available';
+            document.getElementById('vocabSize').textContent = status.vocabSize || 'Unknown';
+            document.getElementById('modelMode').textContent = status.mode || 'Unknown';
+            
+            // Update main status
+            const statusDiv = document.getElementById('status');
+            if (status.isInitialized) {
+                if (status.hasSession) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = '✅ ONNX Model fully loaded and ready!';
+                } else if (status.hasOrt) {
+                    statusDiv.className = 'status warning';
+                    statusDiv.innerHTML = '⚠️ ONNX Runtime available but model not loaded. Using lightweight mode.';
+                } else {
+                    statusDiv.className = 'status warning';
+                    statusDiv.innerHTML = '⚠️ Using lightweight mode - no ONNX support available.';
+                }
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ Model service not initialized.';
+            }
+        }
+        
+        function showResult(data) {
+            const resultsDiv = document.getElementById('results');
+            let resultHtml = '<h3>Test Results:</h3>';
+            
+            if (data.success) {
+                resultHtml += `<div class="status success">✅ Summarization successful!</div>`;
+                resultHtml += `<div class="result"><strong>Generated Summary:</strong>\n${data.summary}</div>`;
+            } else {
+                resultHtml += `<div class="status error">❌ Summarization failed!</div>`;
+                resultHtml += `<div class="result"><strong>Error:</strong>\n${data.error}</div>`;
+            }
+            
+            resultsDiv.innerHTML = resultHtml;
+        }
+        
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js';
+
+        async function testModel() {
+            console.log('Testing ONNX model...');
+            const pipe = await pipeline('text2text-generation', 'Xenova/flan-t5-small');
+            const output = await pipe('Summarize: "The quick brown fox jumps over the lazy dog."');
+            console.log(output);
+            document.getElementById('results').innerHTML =
+                `<div class="result"><strong>Model Output:</strong>\n${output[0].generated_text}</div>`;
+        }
+
+
+        
+        function testSummarization() {
+            const text = document.getElementById('testText').value.trim();
+            if (!text) {
+                alert('Please enter some text to test summarization.');
+                return;
+            }
+            
+            console.log('Testing summarization with text:', text.substring(0, 100) + '...');
+            document.getElementById('testSummarization').disabled = true;
+            document.getElementById('testSummarization').innerHTML = '<span class="loading"></span> Processing...';
+            
+            // Trigger summarization test in the extension
+            const event = new CustomEvent('testSummarization', { detail: { text } });
+            document.dispatchEvent(event);
+            
+            // Re-enable button after a delay
+            setTimeout(() => {
+                document.getElementById('testSummarization').disabled = false;
+                document.getElementById('testSummarization').innerHTML = '📝 Test Summarization';
+            }, 10000);
+        }
+        
+        function refreshStatus() {
+            console.log('Refreshing status...');
+            document.getElementById('refreshStatus').disabled = true;
+            document.getElementById('refreshStatus').innerHTML = '<span class="loading"></span> Refreshing...';
+            
+            // Trigger status refresh
+            testModel();
+            
+            setTimeout(() => {
+                document.getElementById('refreshStatus').disabled = false;
+                document.getElementById('refreshStatus').innerHTML = '🔄 Refresh Status';
+            }, 3000);
+        }
+        
+        // Initialize page
+        window.addEventListener('load', () => {
+            console.log('ONNX test page loaded');
+            
+            // Wait a bit for the extension to initialize, then test
+            setTimeout(() => {
+                testModel();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

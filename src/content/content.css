@@ -1,3 +1,1 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Content script styles - using inline styles for floating button to avoid CSS loading issues */

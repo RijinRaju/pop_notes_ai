@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Note Extension Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Note Extension Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test Section 1: Long Text Selection</h2>
+        <p>
+            This is a test paragraph with plenty of text to select. You should be able to select this text 
+            and see the floating button appear. The text needs to be at least 10 characters long for the 
+            floating button to show up. This paragraph contains more than enough text to trigger the 
+            floating button functionality.
+        </p>
+        <div class="highlight">
+            <strong>Instructions:</strong> Select the text above (at least 10 characters) and you should see 
+            a floating button with three options: Summarize with AI, Create Note, and Screenshot & Analyze.
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Section 2: Different Content</h2>
+        <p>
+            Here's another section with different content to test. This allows you to test the extension 
+            on various types of text content. You can select any portion of this text that is long enough 
+            to trigger the floating button. The extension should work on any webpage and with any type 
+            of text content.
+        </p>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt 
+            ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco 
+            laboris nisi ut aliquip ex ea commodo consequat.
+        </p>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Section 3: Short Text (Should Not Trigger Button)</h2>
+        <p>Short text here.</p>
+        <div class="highlight">
+            <strong>Note:</strong> This text is too short to trigger the floating button. You need at least 
+            10 characters selected.
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Debugging Information</h2>
+        <p>To debug the extension:</p>
+        <ol>
+            <li>Open the browser console (F12)</li>
+            <li>Look for messages starting with "🚀 AI Note content script loaded successfully"</li>
+            <li>Select some text and watch for console logs about mouse events</li>
+            <li>Check for any error messages</li>
+        </ol>
+    </div>
+
+    <script>
+        // Add some console logging to help with debugging
+        console.log('Test page loaded');
+        console.log('Document ready state:', document.readyState);
+        console.log('Document body exists:', !!document.body);
+    </script>
+</body>
+</html> 

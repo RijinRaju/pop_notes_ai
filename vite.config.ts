@@ -1,30 +1,48 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
   
   build: {
+    outDir: 'dist',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, 'src/popup/popup.html'),
-        options: resolve(__dirname, 'src/options/options.html'),
-        background: resolve(__dirname, 'src/background/background.ts'),
-        content: resolve(__dirname, 'src/content/content.ts')
+        popup: 'src/popup/popup.html',
+        options: 'src/options/options.html',
+        background: 'src/background/background.js',
+        content: 'src/content/content.js'
       },
       output: {
-        entryFileNames: 'src/[name]/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]'
+        entryFileNames: (chunkInfo) => {
+          if (chunkInfo.name === 'background') {
+            return 'src/background/background.js'
+          }
+          if (chunkInfo.name === 'content') {
+            return 'src/content/content.js'
+          }
+          return 'src/[name]/[name].js'
+        },
+        chunkFileNames: 'src/[name]/[name].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'src/[name]/[name].css'
+          }
+          return 'assets/[name].[ext]'
+        }
       }
-    },
-    outDir: 'dist',
-    emptyOutDir: true
+    }
   },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
+  
+  optimizeDeps: {
+    include: ['@xenova/transformers']
+  },
+  
+  server: {
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin'
     }
   }
 }) 

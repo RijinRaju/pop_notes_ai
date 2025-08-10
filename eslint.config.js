@@ -6,7 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 export default [
   js.configs.recommended,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ['**/*.{js,jsx}'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -31,23 +31,9 @@ export default [
         'warn',
         { allowConstantExport: true }
       ],
-      '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'error',
-      'no-var': 'error'
-    }
-  },
-  {
-    files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      parser: '@typescript-eslint/parser',
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true
-        }
-      }
+      'no-var': 'error',
+      'no-unused-vars': 'warn'
     }
   }
 ]; 
